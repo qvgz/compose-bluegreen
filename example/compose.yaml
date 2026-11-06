@@ -1,0 +1,27 @@
+x-app: &app
+  platform: linux/amd64   # qvgz/health-app 只发布了 amd64
+  restart: unless-stopped
+  healthcheck:
+    test: ["CMD", "wget", "-qO", "/dev/null", "http://127.0.0.1:8080/health"]
+    interval: 2s
+    timeout: 1s
+    retries: 2
+
+services:
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./conf.d:/etc/nginx/conf.d
+
+  app-blue:
+    <<: *app
+    image: qvgz/health-app:${APP_TAG_BLUE}
+    profiles: [blue]
+
+  app-green:
+    <<: *app
+    image: qvgz/health-app:${APP_TAG_GREEN}
+    profiles: [green]
